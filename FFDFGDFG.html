@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MangaEditorPro</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="welcomeModal" class="modal">
+        <div class="modal-content">
+            <h1>MangaEditorPro</h1>
+            <h2>Professional Manga Text Editing Tool</h2>
+            <div class="welcome-info">
+                <h3>KEY FEATURES:</h3>
+                <ul>
+                    <li>✓ Full-width image viewer with zoom/pan</li>
+                    <li>✓ Line-by-line tagging system</li>
+                    <li>✓ Synchronized text editor and output</li>
+                    <li>✓ Complete export functionality</li>
+                </ul>
+                <h3>TAGGING MODE:</h3>
+                <p>Press TAB to toggle • OFF: Numbers type normally • ON: Numbers apply tags</p>
+            </div>
+            <button class="btn-primary" onclick="closeWelcome()">Get Started</button>
+        </div>
+    </div>
+
+    <div id="app">
+        <div class="header">
+            <div class="title">MangaEditorPro</div>
+            <div class="actions">
+                <button class="btn" onclick="openFolder()">Open Folder</button>
+                <button class="btn" onclick="loadTextFile()">Load Text</button>
+                <button class="btn" onclick="saveProject()">Save</button>
+                <button class="btn" onclick="showExportMenu()">Export</button>
+                <button class="btn" onclick="showHelp()">Help</button>
+            </div>
+        </div>
+
+        <div class="toolbar">
+            <div class="nav-section">
+                <button onclick="firstPage()">First</button>
+                <button onclick="prevPage()">Previous</button>
+                <span id="pageLabel">No pages loaded</span>
+                <button onclick="nextPage()">Next</button>
+                <button onclick="lastPage()">Last</button>
+            </div>
+            <div class="tag-section">
+                <span>Tagging Mode:</span>
+                <button id="tagModeBtn" class="tag-mode-off" onclick="toggleTagMode()">OFF</button>
+                <select id="tagSelect">
+                    <option value="">Select tag...</option>
+                    <option value='""'>1: Dialogue</option>
+                    <option value="()">2: Thought</option>
+                    <option value="::">3: Emotion</option>
+                    <option value="OT:">4: Narration</option>
+                    <option value="ST:">5: Small Text</option>
+                    <option value="SFX:">6: Sound</option>
+                    <option value="//">7: Split</option>
+                    <option value="[]">8: Note</option>
+                    <option value="--">9: Pause</option>
+                    <option value="clear">0: Clear</option>
+                </select>
+                <button class="btn-mark" onclick="markSelected()">MARK</button>
+                <span id="selectedInfo">Click line numbers to select</span>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="pages-panel">
+                <div class="panel-title">Pages</div>
+                <div id="pagesList"></div>
+            </div>
+
+            <div class="image-panel">
+                <div class="image-toolbar">
+                    <button onclick="zoomOut()">Zoom Out</button>
+                    <span id="zoomText">100%</span>
+                    <button onclick="zoomIn()">Zoom In</button>
+                    <span class="sep"></span>
+                    <button id="fitWidthBtn" class="active" onclick="fitWidth()">Fit Width</button>
+                    <button id="fitHeightBtn" onclick="fitHeight()">Fit Height</button>
+                    <button id="fitAllBtn" onclick="fitAll()">Fit All</button>
+                    <button id="actualBtn" onclick="actualSize()">1:1 Actual</button>
+                    <span class="sep"></span>
+                    <button onclick="rotateRight()">Rotate Right</button>
+                    <button onclick="rotateLeft()">Rotate Left</button>
+                    <button onclick="resetView()">Reset</button>
+                    <span id="imageInfo">No image</span>
+                </div>
+                <div class="canvas-wrapper" id="canvasWrapper">
+                    <canvas id="imageCanvas"></canvas>
+                </div>
+            </div>
+
+            <div class="editor-panel">
+                <div class="editor-header">
+                    <span>TEXT EDITOR</span>
+                    <label><input type="checkbox" id="autoSpace" checked> Auto-spacing</label>
+                    <label><input type="checkbox" id="syncScroll" checked> Sync scroll</label>
+                    <label><input type="checkbox" id="wrapText"> Wrap text</label>
+                    <span id="cursorPos">Ln 1, Col 1</span>
+                </div>
+                <div class="split-container">
+                    <div class="editor-section">
+                        <div class="editor-area">
+                            <div id="lineNumbers" class="line-nums"></div>
+                            <textarea id="textArea" spellcheck="false"></textarea>
+                        </div>
+                    </div>
+                    <div class="resizer"></div>
+                    <div class="output-section">
+                        <div class="output-header">
+                            <span>OUTPUT PREVIEW</span>
+                            <button onclick="copyOutput()">Copy</button>
+                        </div>
+                        <div class="output-area">
+                            <div id="outputNums" class="output-nums"></div>
+                            <div id="outputText" class="output-text"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="statusbar">
+            <span id="status">Ready</span>
+            <span id="stats"></span>
+            <span class="credit">Developed by: Philia Scans</span>
+        </div>
+    </div>
+
+    <div id="exportModal" class="modal" style="display:none;">
+        <div class="modal-content export">
+            <h2>Export Options</h2>
+            <button class="export-btn" onclick="exportAll()">Export All Pages</button>
+            <button class="export-btn" onclick="exportTagged()">Export Tagged Script</button>
+            <button class="export-btn" onclick="exportCurrent()">Export Current Page</button>
+            <button class="export-btn" onclick="exportStats()">Export Statistics</button>
+            <button class="btn" onclick="closeExportMenu()">Close</button>
+        </div>
+    </div>
+
+    <div id="helpModal" class="modal" style="display:none;">
+        <div class="modal-content help-content">
+            <h2>MangaEditorPro - Help Guide</h2>
+            
+            <h3>File Operations</h3>
+            <ul>
+                <li><strong>Open Folder:</strong> Select folder containing manga images. Images will be sorted numerically.</li>
+                <li><strong>Load Text:</strong> Import text file with detected_text.txt format (filename: then text with optional tags).</li>
+                <li><strong>Save:</strong> Saves project.json and detected_text.txt with all text and tags preserved.</li>
+                <li><strong>Export:</strong> Multiple export formats - all pages, tagged only, current page, or statistics.</li>
+            </ul>
+
+            <h3>Navigation</h3>
+            <ul>
+                <li><strong>First/Previous/Next/Last:</strong> Navigate between pages.</li>
+                <li><strong>Keyboard:</strong> Alt+Left/Right for prev/next, Home/End for first/last.</li>
+                <li><strong>Page List:</strong> Click any page in left panel to jump directly.</li>
+            </ul>
+
+            <h3>Image Viewer</h3>
+            <ul>
+                <li><strong>Zoom In/Out:</strong> Adjust image size.</li>
+                <li><strong>Fit Width:</strong> Scale image to fit panel width.</li>
+                <li><strong>Fit Height:</strong> Scale image to fit panel height.</li>
+                <li><strong>Fit All:</strong> Scale to fit entire panel.</li>
+                <li><strong>1:1 Actual:</strong> Display at original size.</li>
+                <li><strong>Rotate:</strong> Rotate image left or right 90 degrees.</li>
+                <li><strong>Reset:</strong> Reset zoom, rotation, and position.</li>
+                <li><strong>Pan:</strong> Click and drag to move image.</li>
+                <li><strong>Mouse Wheel:</strong> Zoom in/out.</li>
+            </ul>
+
+            <h3>Text Editing</h3>
+            <ul>
+                <li><strong>Type directly:</strong> Enter text in text area.</li>
+                <li><strong>Auto-spacing:</strong> Automatically adds spacing between lines.</li>
+                <li><strong>Sync scroll:</strong> Line numbers and output scroll with text.</li>
+                <li><strong>Wrap text:</strong> Wrap long lines instead of horizontal scroll.</li>
+                <li><strong>Line Numbers:</strong> Click to select lines. Ctrl+Click for range selection.</li>
+            </ul>
+
+            <h3>Tagging System</h3>
+            <ul>
+                <li><strong>Tagging Mode (TAB):</strong> Toggle between OFF (type normally) and ON (numbers apply tags).</li>
+                <li><strong>Tag Keys (when mode ON):</strong></li>
+                <li>1: "" - Dialogue</li>
+                <li>2: () - Thought</li>
+                <li>3: :: - Emotion</li>
+                <li>4: OT: - Narration</li>
+                <li>5: ST: - Small Text</li>
+                <li>6: SFX: - Sound Effects</li>
+                <li>7: // - Split Dialogue</li>
+                <li>8: [] - Notes</li>
+                <li>9: -- - Pause/Silence</li>
+                <li>0: Clear tag</li>
+                <li><strong>Bulk Tagging:</strong> Select multiple lines (click line numbers), choose tag from dropdown, click MARK.</li>
+            </ul>
+
+            <h3>Output Preview</h3>
+            <ul>
+                <li><strong>Shows:</strong> Text with tags applied at line beginnings.</li>
+                <li><strong>Tagged lines:</strong> Displayed in green color.</li>
+                <li><strong>Copy:</strong> Copy entire output to clipboard.</li>
+                <li><strong>Resize:</strong> Drag vertical divider to adjust panel size.</li>
+            </ul>
+
+            <h3>Keyboard Shortcuts</h3>
+            <ul>
+                <li><strong>Ctrl+O:</strong> Open folder</li>
+                <li><strong>Ctrl+T:</strong> Load text file</li>
+                <li><strong>Ctrl+S:</strong> Save project</li>
+                <li><strong>Alt+Left/Right:</strong> Navigate pages</li>
+                <li><strong>Home/End:</strong> First/Last page</li>
+                <li><strong>TAB:</strong> Toggle tagging mode</li>
+                <li><strong>1-9 (tagging ON):</strong> Apply tags</li>
+            </ul>
+
+            <h3>File Formats</h3>
+            <ul>
+                <li><strong>detected_text.txt:</strong> Format - filename: followed by text lines with optional tags at beginning.</li>
+                <li><strong>project.json:</strong> Complete project data including all text and tags.</li>
+            </ul>
+
+            <button class="btn-primary" onclick="closeHelp()">Close</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
